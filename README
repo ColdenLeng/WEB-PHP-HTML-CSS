@@ -1,1 +1,93 @@
-This is a small project about web design with server control, no multimedia files, only code files.
+# WEB-PHP-HTML-CSS (PHP + MySQL Mini Web App)
+
+A small PHP + MySQL web application (MVC-style) built for a course project.  
+It provides user registration/login, Q&A posting/searching/answering, image upload (user icon + gallery), a simple questionnaire form, and a “new idea” submission board.
+
+## Tech Stack
+- PHP (server-side)
+- MySQL (database)
+- HTML/CSS + Bootstrap (UI)
+- JavaScript/AJAX (some actions return JSON from `controller.php`)
+
+## Main Features
+- **Authentication**
+  - Register / Sign in / Sign out (session-based)
+  - Account actions: change password / unsubscribe (delete account)
+- **Q&A Module**
+  - Post a question
+  - List all questions (and list user’s own questions)
+  - Search questions by keyword (`LIKE %term%`)
+  - Answer a question (stores answer in DB)
+  - Delete a question
+- **Images**
+  - Upload user icon (profile avatar)
+  - Upload user images (gallery)
+  - List and delete uploaded images
+- **Questionnaire**
+  - Submit 4 short answers, stored in DB
+- **New Idea Board**
+  - Post an idea
+  - List all ideas
+  - Delete an idea
+
+## Project Structure (Key Files)
+- `controller.php`
+  - The main entry point / router.
+  - Reads `$_POST['page']` and `$_POST['command']` to dispatch actions.
+  - Starts session and enforces login for `MainPage` actions.
+  - Handles:
+    - Auth (SignIn / Join / SignOut)
+    - Q&A actions (post/list/search/delete/answer)
+    - Questionnaire and New Idea submissions
+    - File upload (stores uploaded file path in DB)
+    - JSON responses for AJAX calls
+
+- `model.php`
+  - Database connection + all DB helper functions (CRUD).
+  - Functions include:
+    - user auth: `check_validity`, `check_existence`, `join_a_user`
+    - user profile: `post_update_username` (change password), `post_delete_username` (unsubscribe), `get_user_icon`
+    - Q&A: `post_a_question`, `search_questions`, `post_all_question`, `post_delete_question`, `post_into_question_context`, `post_get_all_answer`, `list_questions`
+    - images: `post_user_image`, `get_user_images`, `del_user_images`, `post_update_icon_username`
+    - questionnaire: `post_questionnaire`
+    - ideas: `post_into_newidea`, `get_all_newidea`, `delete_idea`
+
+- `starPage.php`
+  - Landing page UI (sign in / join in) and general description UI.
+
+- `mainPage.php`
+  - Main logged-in UI with navigation to modules:
+    Description, Q&A, Answer, Image, Questionnaire, New Idea, My Account.
+
+- `data.sql`
+  - Database schema (tables):
+    - `UserLeng` (users + icon)
+    - `Questions` (question + answer + date)
+    - `UserImages` (image URLs per user)
+    - `Questionnaire` (C1..C4 + userId)
+    - `NewIdea` (ideas per user)
+
+## Database Schema
+Run `data.sql` to create tables:
+- `UserLeng(Id, Username, Password, Email, Date, Icon)`
+- `Questions(Id, Question, UserId, Date, AnswerContext)`
+- `UserImages(Id, UserId, Url)`
+- `Questionnaire(Id, C1, C2, C3, C4, UserId)`
+- `NewIdea(Id, UserId, NewIdea)`
+
+## How to Run (Local Setup)
+1. Install a local PHP + MySQL environment (e.g., XAMPP/MAMP/LAMP).
+2. Create a MySQL database and import schema:
+   - `mysql -u <user> -p <db_name> < data.sql`
+3. Configure DB connection in `model.php`:
+   - Replace the `mysqli_connect(...)` values with your local credentials.
+4. Put the project into your web server root directory and open it in the browser.
+
+## Notes / Security Improvements (Recommended)
+This project is a learning project. For production usage, consider:
+- Use **prepared statements** (avoid SQL injection from string concatenation).
+- Store passwords using `password_hash()` + `password_verify()` (avoid plaintext passwords).
+- Escape HTML output using `htmlspecialchars()` (avoid XSS).
+- Add CSRF protection for state-changing actions.
+- Do not hardcode DB credentials in a public repository (use environment variables or a separate config file).
+
